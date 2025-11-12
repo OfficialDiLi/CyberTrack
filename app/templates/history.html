@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Scan History - Security Platform{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-light mb-6">Scan History</h2>
+<p class="text-gray-400 mb-8">A log of all URLs analyzed by the platform.</p>
+
+<div class="bg-gray-800 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-700">
+        <thead>
+            <tr>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timestamp</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Input</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Prediction</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Confidence</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+            {% for item in scan_records %}
+            <tr class="hover:bg-gray-700 transition duration-100 border-b border-gray-800">
+                <td class="p-4 text-sm">{{ item.timestamp.strftime('%Y-%m-%d %H:%M:%S') if item.timestamp else 'N/A' }}</td>
+                <td class="p-4 text-sm">{{ item.input_value }}</td>
+                <td class="p-4 text-sm">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ 'bg-red-600' if item.verdict == 'MALICIOUS' else 'bg-yellow-600' if item.verdict == 'SUSPICIOUS' else 'bg-green-600' }} text-white">{{ item.verdict }}</span>
+                </td>
+                <td class="p-4 text-sm">{{ "%.2f"|format(item.confidence|float) + '%' if item.confidence else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if scan_records|length == 0 %}
+<p class="text-center text-gray-500 mt-4">No scan history found.</p>
+{% endif %}
+{% endblock %}

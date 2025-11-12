@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Security Platform - Hybrid Threat Detection{% endblock %}</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+        /* Custom styles for input file element to match the dark theme aesthetic */
+        .custom-file-input::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+        .custom-file-input::before {
+            content: 'Choose File';
+            display: inline-block;
+            background: #3b82f6; /* blue-500 */
+            color: white;
+            border: 1px solid #3b82f6;
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.5rem 1rem;
+            outline: none;
+            white-space: nowrap;
+            -webkit-user-select: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .custom-file-input:hover::before {
+            background: #2563eb; /* blue-600 */
+        }
+        .custom-file-input:active::before {
+            background: #1d4ed8; /* blue-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+    {% if current_user.is_authenticated %}
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-gray-800 flex-shrink-0 flex flex-col p-6">
+            <h1 class="text-2xl font-bold mb-8 text-blue-400">Security Platform</h1>
+            <nav class="flex-grow space-y-2">
+                <!-- Navigation Items -->
+                <a href="{{ url_for('main.dashboard') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.dashboard' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('main.url_detector') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.url_detector' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">link</span>
+                    URL Detector
+                </a>
+                <a href="{{ url_for('main.file_scanner') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.file_scanner' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">upload_file</span>
+                    File Scanner
+                </a>
+                <a href="{{ url_for('main.ip_checker') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.ip_checker' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">location_on</span>
+                    IP Checker
+                </a>
+                <a href="{{ url_for('main.domain_checker') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.domain_checker' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">public</span>
+                    Domain Checker
+                </a>
+                <a href="{{ url_for('main.threat_feed') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.threat_feed' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">rss_feed</span>
+                    Threat Feed
+                </a>
+                <a href="{{ url_for('main.history') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.history' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">history</span>
+                    History
+                </a>
+                {% if current_user.is_admin() %}
+                <a href="{{ url_for('main.admin_users') }}" class="nav-item flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150 {% if request.endpoint == 'main.admin_users' %}bg-blue-600 text-white{% endif %}">
+                    <span class="material-icons-outlined mr-3">admin_panel_settings</span>
+                    Admin Panel
+                </a>
+                {% endif %}
+            </nav>
+            <div class="mt-auto text-xs text-gray-500 pt-4 border-t border-gray-700">
+                <p>Welcome, {{ current_user.username }}!</p>
+                <a href="{{ url_for('auth.logout') }}" class="text-blue-400 hover:text-blue-300">Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="content-container" class="flex-grow p-10 overflow-y-auto">
+            <div class="max-w-6xl mx-auto">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    {% else %}
+    <div id="login-container" class="flex-grow flex items-center justify-center min-h-screen p-10">
+        <div class="w-full max-w-md">
+            <div id="auth-content">
+                {% block auth_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Define badge classes for threat levels
+        const badgeClasses = {
+            'MALICIOUS': 'bg-red-600',
+            'BENIGN': 'bg-green-600',
+            'Critical': 'bg-red-600',
+            'High': 'bg-yellow-600',
+            'Medium': 'bg-blue-600',
+            'Low': 'bg-green-600',
+            'SUSPICIOUS': 'bg-yellow-600',
+        };
+
+        // Fetch function to replace Firebase functionality
+        async function analyzeInput(type, value) {
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input_value: value,
+                        scan_type: type
+                    })
+                });
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Analysis error:', error);
+                return null;
+            }
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Threat Feed - Security Platform{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-light mb-6">Threat Intelligence Feed</h2>
+<p class="text-gray-400 mb-8">A feed of recent cybersecurity threats from various sources.</p>
+
+<div class="bg-gray-800 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-700">
+        <thead>
+            <tr>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Last Reported</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Indicator</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Country</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Confidence</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Severity</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+            {% for threat in threat_feed %}
+            <tr class="hover:bg-gray-700 transition duration-100 border-b border-gray-800">
+                <td class="p-4 text-sm">{{ threat.timestamp.strftime('%Y-%m-%d %H:%M:%S') if threat.timestamp else 'N/A' }}</td>
+                <td class="p-4 text-sm">{{ threat.type }}</td>
+                <td class="p-4 text-sm font-mono">{{ threat.indicator }}</td>
+                <td class="p-4 text-sm">{{ threat.country_code if threat.country_code else 'N/A' }}</td>
+                <td class="p-4 text-sm">{{ threat.confidence if threat.confidence else 'N/A' }}%</td>
+                <td class="p-4 text-sm">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ 'bg-red-600' if threat.severity == 'Critical' or threat.severity == 'High' else 'bg-yellow-600' if threat.severity == 'Medium' else 'bg-green-600' }} text-white">{{ threat.severity }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if not threat_feed %}
+<p class="text-center text-gray-500 mt-4">No threat intelligence data available. Ensure AbuseIPDB API key is configured.</p>
+{% endif %}
+{% endblock %}

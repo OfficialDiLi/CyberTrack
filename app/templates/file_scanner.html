@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}File Scanner - Security Platform{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-light mb-6">File Scanner</h2>
+<p class="text-gray-400 mb-8">Upload a file to calculate its SHA256 hash and check against known threats via VirusTotal.</p>
+
+<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl">
+    <div class="space-y-6">
+        <label for="file-input" class="block text-sm font-medium text-gray-400">Select file to scan</label>
+        <input type="file" id="file-input" class="custom-file-input">
+        
+        <button id="file-button" class="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150 shadow-md">
+            Scan File
+        </button>
+        
+        <div id="file-result" class="mt-6 p-4 rounded-lg hidden"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Function to calculate SHA256 hash of a file
+async function calculateSHA256(file) {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hexHash;
+}
+
+document.getElementById('file-button').addEventListener('click', async function() {
+    const inputElement = document.getElementById('file-input');
+    const selectedFile = inputElement.files[0];
+    
+    const resultDiv = document.getElementById('file-result');
+    const button = document.getElementById('file-button');
+    
+    if (!selectedFile) {
+        resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+        resultDiv.innerHTML = 'Please select a file.';
+        resultDiv.classList.remove('hidden');
+        return;
+    }
+    
+    button.disabled = true;
+    button.textContent = 'Calculating Hash...';
+    resultDiv.classList.add('hidden');
+    
+    try {
+        const fileHash = await calculateSHA256(selectedFile);
+        button.textContent = 'Scanning File...';
+
+        const data = await analyzeInput('file', fileHash);
+        
+        button.disabled = false;
+        button.textContent = 'Scan File';
+        
+        if (data) {
+            const resultClass = data.verdict === 'MALICIOUS' ? 'bg-red-800/50 text-red-300' :
+                              data.verdict === 'SUSPICIOUS' ? 'bg-yellow-800/50 text-yellow-300' : 'bg-green-800/50 text-green-300';
+            
+            resultDiv.className = `mt-6 p-6 rounded-xl shadow-lg ${resultClass}`;
+            resultDiv.innerHTML = `
+                <h4 class="text-xl font-bold mb-2">Analysis Result (File)</h4>
+                <p class="mb-2"><strong>Input Hash:</strong> <span class="font-mono break-all">${data.input_value}</span></p>
+                <p class="text-2xl font-extrabold mt-4">VERDICT:
+                    <span class="px-3 py-1 rounded-full text-lg font-bold ${badgeClasses[data.verdict] || 'bg-gray-500'} text-white">
+                        ${data.verdict}
+                    </span>
+                </p>
+                <p class="mt-4">${data.summary}</p>
+            `;
+            resultDiv.classList.remove('hidden');
+        } else {
+            resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+            resultDiv.innerHTML = 'Error occurred during analysis.';
+            resultDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Analysis error:', error);
+        
+        button.disabled = false;
+        button.textContent = 'Scan File';
+        
+        resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+        resultDiv.innerHTML = 'Failed to scan file. Ensure the file is not too large or try again.';
+        resultDiv.classList.remove('hidden');
+    }
+});
+</script>
+{% endblock %}

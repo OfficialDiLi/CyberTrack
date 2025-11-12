@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Security Platform{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-light mb-6">Admin Panel</h2>
+<p class="text-gray-400 mb-8">Manage users and system settings.</p>
+
+<div class="bg-gray-800 rounded-xl shadow-lg overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-700">
+        <thead>
+            <tr>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Username</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Email</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Role</th>
+                <th class="p-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created At</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+            {% for user in users %}
+            <tr class="hover:bg-gray-700 transition duration-100 border-b border-gray-800">
+                <td class="p-4 text-sm">{{ user.id }}</td>
+                <td class="p-4 text-sm">{{ user.username }}</td>
+                <td class="p-4 text-sm">{{ user.email }}</td>
+                <td class="p-4 text-sm">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium {{ 'bg-red-600' if user.role == 'admin' else 'bg-blue-600' }} text-white">{{ user.role }}</span>
+                </td>
+                <td class="p-4 text-sm">{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

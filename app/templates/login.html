@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Security Platform{% endblock %}
+
+{% block auth_content %}
+<div class="max-w-md mx-auto mt-20">
+    <div class="bg-gray-800 p-8 rounded-xl shadow-lg">
+        <h2 class="text-3xl font-bold mb-6 text-center">Security Platform Login</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-3 rounded-lg {% if category == 'error' %}bg-red-800/50 text-red-300{% else %}bg-green-800/50 text-green-300{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                <input type="text" id="username" name="username" required 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                <input type="password" id="password" name="password" required 
+                       class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <button type="submit" 
+                    class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150 shadow-md">
+                Login
+            </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <p class="text-gray-400">Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-blue-400 hover:text-blue-300">Register here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Security Platform - Hybrid Threat Detection{% endblock %}</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+    <div id="login-container" class="flex-grow flex items-center justify-center min-h-screen p-10">
+        <div class="w-full max-w-md">
+            <div id="auth-content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Any public-specific scripts can go here
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

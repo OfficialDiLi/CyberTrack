@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}URL Detector - Security Platform{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-light mb-6">URL Detector</h2>
+<p class="text-gray-400 mb-8">Analyze a URL for potential threats using the trained ML model and VirusTotal integration.</p>
+
+<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl">
+    <div class="space-y-6">
+        <label for="url-input" class="block text-sm font-medium text-gray-400">Enter URL</label>
+        <input type="text" id="url-input" placeholder="Enter URL" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+        
+        <button id="url-button" class="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150 shadow-md">
+            Analyze URL
+        </button>
+        
+        <div id="url-result" class="mt-6 p-4 rounded-lg hidden"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('url-button').addEventListener('click', async function() {
+    const inputElement = document.getElementById('url-input');
+    const inputValue = inputElement.value.trim();
+    
+    const resultDiv = document.getElementById('url-result');
+    const button = document.getElementById('url-button');
+    
+    if (!inputValue) {
+        resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+        resultDiv.innerHTML = 'Please enter a URL.';
+        resultDiv.classList.remove('hidden');
+        return;
+    }
+    
+    button.disabled = true;
+    button.textContent = 'Analyzing...';
+    resultDiv.classList.add('hidden');
+    
+    try {
+        const data = await analyzeInput('url', inputValue);
+        
+        button.disabled = false;
+        button.textContent = 'Analyze URL';
+        
+        if (data) {
+            const resultClass = data.verdict === 'MALICIOUS' ? 'bg-red-800/50 text-red-300' :
+                              data.verdict === 'SUSPICIOUS' ? 'bg-yellow-800/50 text-yellow-300' : 'bg-green-800/50 text-green-300';
+            
+            resultDiv.className = `mt-6 p-6 rounded-xl shadow-lg ${resultClass}`;
+            resultDiv.innerHTML = `
+                <h4 class="text-xl font-bold mb-2">Analysis Result (URL)</h4>
+                <p class="mb-2"><strong>Input:</strong> <span class="font-mono break-all">${data.input_value}</span></p>
+                <p class="text-2xl font-extrabold mt-4">VERDICT:
+                    <span class="px-3 py-1 rounded-full text-lg font-bold ${badgeClasses[data.verdict] || 'bg-gray-500'} text-white">
+                        ${data.verdict}
+                    </span>
+                </p>
+                <p class="mt-4">${data.summary}</p>
+            `;
+            resultDiv.classList.remove('hidden');
+        } else {
+            resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+            resultDiv.innerHTML = 'Error occurred during analysis.';
+            resultDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Analysis error:', error);
+        
+        button.disabled = false;
+        button.textContent = 'Analyze URL';
+        
+        resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+        resultDiv.innerHTML = 'Failed to analyze URL.';
+        resultDiv.classList.remove('hidden');
+    }
+});
+</script>
+{% endblock %}

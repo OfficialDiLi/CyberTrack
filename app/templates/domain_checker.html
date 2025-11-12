@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Domain Checker - Security Platform{% endblock %}
+
+{% block content %}
+<h2 class="text-4xl font-light mb-6">Domain Reputation Checker</h2>
+<p class="text-gray-400 mb-8">Check the WHOIS registration data and reputation for a domain name.</p>
+
+<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl">
+    <div class="space-y-6">
+        <label for="domain-input" class="block text-sm font-medium text-gray-400">Enter Domain Name (e.g., example.com)</label>
+        <input type="text" id="domain-input" placeholder="Enter Domain Name (e.g., example.com)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+        
+        <button id="domain-button" class="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition duration-150 shadow-md">
+            Check Domain
+        </button>
+        
+        <div id="domain-result" class="mt-6 p-4 rounded-lg hidden"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('domain-button').addEventListener('click', async function() {
+    const inputElement = document.getElementById('domain-input');
+    const inputValue = inputElement.value.trim();
+    
+    const resultDiv = document.getElementById('domain-result');
+    const button = document.getElementById('domain-button');
+    
+    if (!inputValue) {
+        resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+        resultDiv.innerHTML = 'Please enter a domain name.';
+        resultDiv.classList.remove('hidden');
+        return;
+    }
+    
+    button.disabled = true;
+    button.textContent = 'Checking Domain...';
+    resultDiv.classList.add('hidden');
+    
+    try {
+        const data = await analyzeInput('domain', inputValue);
+        
+        button.disabled = false;
+        button.textContent = 'Check Domain';
+        
+        if (data) {
+            const resultClass = data.verdict === 'MALICIOUS' ? 'bg-red-800/50 text-red-300' :
+                              data.verdict === 'SUSPICIOUS' ? 'bg-yellow-800/50 text-yellow-300' : 'bg-green-800/50 text-green-300';
+            
+            resultDiv.className = `mt-6 p-6 rounded-xl shadow-lg ${resultClass}`;
+            resultDiv.innerHTML = `
+                <h4 class="text-xl font-bold mb-2">Analysis Result (Domain)</h4>
+                <p class="mb-2"><strong>Input:</strong> <span class="font-mono break-all">${data.input_value}</span></p>
+                <p class="text-2xl font-extrabold mt-4">VERDICT:
+                    <span class="px-3 py-1 rounded-full text-lg font-bold ${badgeClasses[data.verdict] || 'bg-gray-500'} text-white">
+                        ${data.verdict}
+                    </span>
+                </p>
+                <p class="mt-4">${data.summary}</p>
+            `;
+            resultDiv.classList.remove('hidden');
+        } else {
+            resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+            resultDiv.innerHTML = 'Error occurred during analysis.';
+            resultDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Analysis error:', error);
+        
+        button.disabled = false;
+        button.textContent = 'Check Domain';
+        
+        resultDiv.className = 'mt-6 p-4 rounded-lg bg-red-800/50 text-red-300';
+        resultDiv.innerHTML = 'Failed to check domain.';
+        resultDiv.classList.remove('hidden');
+    }
+});
+</script>
+{% endblock %}
