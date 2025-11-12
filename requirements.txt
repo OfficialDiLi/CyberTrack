@@ -5,7 +5,7 @@ cachetools==6.2.1
 certifi==2025.11.12
 charset-normalizer==3.4.4
 click==8.3.0
-Flask==3.0.3
+Flask==3.1.2
 flask-form==1.0.0
 Flask-Login==0.6.3
 Flask-SQLAlchemy==3.1.1
@@ -48,4 +48,4 @@ typing_extensions==4.15.0
 uritemplate==4.2.0
 urllib3==2.5.0
 websockets==15.0.1
-Werkzeug==3.0.3
+Werkzeug==3.1.3
