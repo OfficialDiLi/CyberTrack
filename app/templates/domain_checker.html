@@ -6,7 +6,7 @@
 <h2 class="text-4xl font-light mb-6">Domain Reputation Checker</h2>
 <p class="text-gray-400 mb-8">Check the WHOIS registration data and reputation for a domain name.</p>
 
-<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl">
+<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-4xl">
     <div class="space-y-6">
         <label for="domain-input" class="block text-sm font-medium text-gray-400">Enter Domain Name (e.g., example.com)</label>
         <input type="text" id="domain-input" placeholder="Enter Domain Name (e.g., example.com)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
@@ -50,16 +50,121 @@ document.getElementById('domain-button').addEventListener('click', async functio
             const resultClass = data.verdict === 'MALICIOUS' ? 'bg-red-800/50 text-red-300' :
                               data.verdict === 'SUSPICIOUS' ? 'bg-yellow-800/50 text-yellow-300' : 'bg-green-800/50 text-green-300';
             
+            let sourcesHtml = '';
+            let whoisDetailsHtml = '';
+
+            if (data.sources && data.sources.length > 0) {
+                sourcesHtml = `
+                    <h5 class="text-lg font-bold mt-6 mb-4">Analysis Sources</h5>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-gray-800 rounded-lg">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Source</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Verdict</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Confidence</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.sources.map(source => `
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2">${source.source}</td>
+                                        <td class="px-4 py-2">
+                                            <span class="px-2 py-1 rounded-full text-xs font-bold ${badgeClasses[source.verdict] || 'bg-gray-500'} text-white">
+                                                ${source.verdict}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2">${source.confidence.toFixed(2)}%</td>
+                                        <td class="px-4 py-2">${source.summary}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                // Extract WHOIS details if available
+                const whoisSource = data.sources.find(source => source.source === 'WHOIS');
+                if (whoisSource && whoisSource.details) {
+                    const details = whoisSource.details;
+                    whoisDetailsHtml = `
+                        <h5 class="text-lg font-bold mt-6 mb-4">WHOIS Information</h5>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-gray-800 rounded-lg">
+                                <tbody>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Domain Name</td>
+                                        <td class="px-4 py-2">${details.domain_name || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Registrar</td>
+                                        <td class="px-4 py-2">${details.registrar || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Creation Date</td>
+                                        <td class="px-4 py-2">${details.creation_date || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Expiration Date</td>
+                                        <td class="px-4 py-2">${details.expiration_date || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Updated Date</td>
+                                        <td class="px-4 py-2">${details.updated_date || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Name Servers</td>
+                                        <td class="px-4 py-2">${details.name_servers ? details.name_servers.join(', ') : 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Emails</td>
+                                        <td class="px-4 py-2">${details.emails ? details.emails.join(', ') : 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Organization</td>
+                                        <td class="px-4 py-2">${details.organization || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Address</td>
+                                        <td class="px-4 py-2">${details.address || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">City</td>
+                                        <td class="px-4 py-2">${details.city || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">State</td>
+                                        <td class="px-4 py-2">${details.state || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Zipcode</td>
+                                        <td class="px-4 py-2">${details.zipcode || 'N/A'}</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2 font-semibold text-gray-400">Country</td>
+                                        <td class="px-4 py-2">${details.country || 'N/A'}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            }
+
             resultDiv.className = `mt-6 p-6 rounded-xl shadow-lg ${resultClass}`;
             resultDiv.innerHTML = `
-                <h4 class="text-xl font-bold mb-2">Analysis Result (Domain)</h4>
+                <h4 class="text-xl font-bold mb-2">Overall Analysis Result</h4>
                 <p class="mb-2"><strong>Input:</strong> <span class="font-mono break-all">${data.input_value}</span></p>
                 <p class="text-2xl font-extrabold mt-4">VERDICT:
                     <span class="px-3 py-1 rounded-full text-lg font-bold ${badgeClasses[data.verdict] || 'bg-gray-500'} text-white">
                         ${data.verdict}
                     </span>
                 </p>
-                <p class="mt-4">${data.summary}</p>
+                <p class="mt-4"><strong>Confidence:</strong> ${data.confidence.toFixed(2)}%</p>
+                <p class="mt-2"><strong>Summary:</strong> ${data.summary}</p>
+                ${sourcesHtml}
+                ${whoisDetailsHtml}
             `;
             resultDiv.classList.remove('hidden');
         } else {

@@ -42,7 +42,6 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
 .hypothesis/
 .pytest_cache/
 
@@ -128,7 +127,6 @@ Thumbs.db
 *.db-journal
 
 # Sensitive files
-config.py
 secrets.json
 .env.local
 .env.production

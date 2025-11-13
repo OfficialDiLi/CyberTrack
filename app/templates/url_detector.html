@@ -6,7 +6,7 @@
 <h2 class="text-4xl font-light mb-6">URL Detector</h2>
 <p class="text-gray-400 mb-8">Analyze a URL for potential threats using the trained ML model and VirusTotal integration.</p>
 
-<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-2xl">
+<div class="bg-gray-800 p-8 rounded-xl shadow-lg max-w-4xl">
     <div class="space-y-6">
         <label for="url-input" class="block text-sm font-medium text-gray-400">Enter URL</label>
         <input type="text" id="url-input" placeholder="Enter URL" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
@@ -50,16 +50,51 @@ document.getElementById('url-button').addEventListener('click', async function()
             const resultClass = data.verdict === 'MALICIOUS' ? 'bg-red-800/50 text-red-300' :
                               data.verdict === 'SUSPICIOUS' ? 'bg-yellow-800/50 text-yellow-300' : 'bg-green-800/50 text-green-300';
             
+            let sourcesHtml = '';
+            if (data.sources && data.sources.length > 0) {
+                sourcesHtml = `
+                    <h5 class="text-lg font-bold mt-6 mb-4">Analysis Sources</h5>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-gray-800 rounded-lg">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Source</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Verdict</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Confidence</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-400">Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.sources.map(source => `
+                                    <tr class="border-t border-gray-700">
+                                        <td class="px-4 py-2">${source.source}</td>
+                                        <td class="px-4 py-2">
+                                            <span class="px-2 py-1 rounded-full text-xs font-bold ${badgeClasses[source.verdict] || 'bg-gray-500'} text-white">
+                                                ${source.verdict}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2">${source.confidence.toFixed(2)}%</td>
+                                        <td class="px-4 py-2">${source.summary}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
             resultDiv.className = `mt-6 p-6 rounded-xl shadow-lg ${resultClass}`;
             resultDiv.innerHTML = `
-                <h4 class="text-xl font-bold mb-2">Analysis Result (URL)</h4>
+                <h4 class="text-xl font-bold mb-2">Overall Analysis Result</h4>
                 <p class="mb-2"><strong>Input:</strong> <span class="font-mono break-all">${data.input_value}</span></p>
                 <p class="text-2xl font-extrabold mt-4">VERDICT:
                     <span class="px-3 py-1 rounded-full text-lg font-bold ${badgeClasses[data.verdict] || 'bg-gray-500'} text-white">
                         ${data.verdict}
                     </span>
                 </p>
-                <p class="mt-4">${data.summary}</p>
+                <p class="mt-4"><strong>Confidence:</strong> ${data.confidence.toFixed(2)}%</p>
+                <p class="mt-2"><strong>Summary:</strong> ${data.summary}</p>
+                ${sourcesHtml}
             `;
             resultDiv.classList.remove('hidden');
         } else {
